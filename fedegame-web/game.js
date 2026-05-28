@@ -104,12 +104,31 @@ function updateRecordLabel() {
 
 function generarOperacion() {
   const nivel = elegirNivel();
+  const familia = elegirFamilia();
+
+  if (familia === "faltante") return operacionFaltante(nivel);
+  if (familia === "secuencia") return operacionSecuencia(nivel);
+  if (familia === "problema") return operacionProblema(nivel);
+  if (familia === "geometria") return operacionGeometria(nivel);
+  if (familia === "ecuacion") return operacionEcuacion(nivel);
+  if (familia === "dinero") return operacionDinero(nivel);
 
   if (nivel === "facil") return operacionFacil();
   if (nivel === "media") return operacionMedia();
   if (nivel === "dificil") return operacionDificil();
   if (nivel === "maestra") return operacionMaestra();
   return operacionLeyenda();
+}
+
+function elegirFamilia() {
+  const progreso = state.ronda / state.rondas;
+  const basicas = ["normal", "normal", "faltante", "secuencia", "problema"];
+  const medias = ["normal", "faltante", "secuencia", "problema", "geometria", "dinero"];
+  const avanzadas = ["normal", "faltante", "secuencia", "problema", "geometria", "ecuacion", "dinero"];
+  if (state.modo === "entrenamiento") return pick(["normal", "faltante", "secuencia", "problema"]);
+  if (progreso < 0.3) return pick(basicas);
+  if (progreso < 0.7) return pick(medias);
+  return pick(avanzadas);
 }
 
 function elegirNivel() {
@@ -209,6 +228,119 @@ function operacionLeyenda() {
   if (tipo === "torre") return [`(${base} ÷ ${divisor} + ${a}) × 2 - ${b}`, (base / divisor + a) * 2 - b, "LEYENDA"];
   if (tipo === "division_final") return [`((${a} + ${b}) × ${divisor}) ÷ ${divisor} + ${c}²`, ((a + b) * divisor) / divisor + c * c, "LEYENDA"];
   return [`(${a} × ${b}) + (${c} × ${d}) - (${base} ÷ ${divisor})`, a * b + c * d - base / divisor, "LEYENDA"];
+}
+
+function rangoPorNivel(nivel) {
+  if (nivel === "facil") return { min: 2, max: 18, mult: 5 };
+  if (nivel === "media") return { min: 4, max: 35, mult: 8 };
+  if (nivel === "dificil") return { min: 8, max: 60, mult: 12 };
+  if (nivel === "maestra") return { min: 12, max: 90, mult: 15 };
+  return { min: 18, max: 120, mult: 20 };
+}
+
+function etiquetaNivel(nivel, fallback = "RETO") {
+  const mapa = {
+    facil: "FÁCIL",
+    media: "MEDIA",
+    dificil: "DIFÍCIL",
+    maestra: "MAESTRA",
+    leyenda: "LEYENDA",
+  };
+  return mapa[nivel] || fallback;
+}
+
+function operacionFaltante(nivel) {
+  const r = rangoPorNivel(nivel);
+  const a = rand(r.min, r.max);
+  const b = rand(2, Math.max(3, Math.floor(r.max / 3)));
+  const tipo = pick(["suma", "resta", "multiplica", "divide"]);
+  if (tipo === "suma") return [`□ + ${b} = ${a + b}`, a, "FALTANTE"];
+  if (tipo === "resta") return [`□ - ${b} = ${a - b}`, a, "FALTANTE"];
+  if (tipo === "multiplica") return [`□ × ${b} = ${a * b}`, a, "FALTANTE"];
+  return [`□ ÷ ${b} = ${a}`, a * b, "FALTANTE"];
+}
+
+function operacionSecuencia(nivel) {
+  const r = rangoPorNivel(nivel);
+  const start = rand(1, Math.max(3, Math.floor(r.max / 4)));
+  const step = rand(2, r.mult);
+  const tipo = pick(["aritmetica", "doble", "cuadrados", "alternada"]);
+  if (tipo === "aritmetica") {
+    return [`Secuencia: ${start}, ${start + step}, ${start + step * 2}, □`, start + step * 3, "SECUENCIA"];
+  }
+  if (tipo === "doble") {
+    return [`Secuencia: ${start}, ${start * 2}, ${start * 4}, □`, start * 8, "SECUENCIA"];
+  }
+  if (tipo === "cuadrados") {
+    const n = rand(2, 7);
+    return [`Secuencia: ${n * n}, ${(n + 1) ** 2}, ${(n + 2) ** 2}, □`, (n + 3) ** 2, "SECUENCIA"];
+  }
+  const a = rand(2, 8);
+  return [`Secuencia: ${a}, ${a + 3}, ${(a + 3) * 2}, □`, (a + 3) * 2 + 3, "SECUENCIA"];
+}
+
+function operacionProblema(nivel) {
+  const r = rangoPorNivel(nivel);
+  const estudiantes = rand(3, r.mult);
+  const puntos = rand(2, 12);
+  const extra = rand(1, 20);
+  const tipo = pick(["clase", "bombas", "cuadernos", "equipos"]);
+  if (tipo === "clase") {
+    return [`Problema: ${estudiantes} estudiantes ganan ${puntos} pts cada uno y luego suman ${extra}. Total`, estudiantes * puntos + extra, "PROBLEMA"];
+  }
+  if (tipo === "bombas") {
+    const cajas = rand(2, 8);
+    const cables = rand(3, 12);
+    return [`Problema: hay ${cajas} cajas con ${cables} cables y se cortan ${extra}. Quedan`, cajas * cables - extra, "PROBLEMA"];
+  }
+  if (tipo === "cuadernos") {
+    const packs = rand(2, 10);
+    const hojas = rand(5, 20);
+    return [`Problema: ${packs} paquetes de ${hojas} hojas más ${extra} hojas. Total`, packs * hojas + extra, "PROBLEMA"];
+  }
+  const grupos = rand(2, 9);
+  const porGrupo = rand(2, 8);
+  return [`Problema: ${grupos} equipos de ${porGrupo} y llegan ${extra} más. Total`, grupos * porGrupo + extra, "PROBLEMA"];
+}
+
+function operacionGeometria(nivel) {
+  const r = rangoPorNivel(nivel);
+  const a = rand(2, r.mult);
+  const b = rand(2, r.mult);
+  const tipo = pick(["area", "perimetro", "cuadrado", "triangulo"]);
+  if (tipo === "area") return [`Área rectángulo: base ${a}, altura ${b}`, a * b, "GEOMETRÍA"];
+  if (tipo === "perimetro") return [`Perímetro rectángulo: lados ${a} y ${b}`, 2 * (a + b), "GEOMETRÍA"];
+  if (tipo === "cuadrado") return [`Área cuadrado: lado ${a}`, a * a, "GEOMETRÍA"];
+  const base = rand(2, r.mult) * 2;
+  const altura = rand(2, r.mult);
+  return [`Área triángulo: base ${base}, altura ${altura}`, (base * altura) / 2, "GEOMETRÍA"];
+}
+
+function operacionEcuacion(nivel) {
+  const r = rangoPorNivel(nivel);
+  const x = rand(2, r.max);
+  const a = rand(2, r.mult);
+  const b = rand(1, r.mult);
+  const tipo = pick(["suma", "multiplica", "mixta", "doble"]);
+  if (tipo === "suma") return [`Resuelve x: x + ${a} = ${x + a}`, x, "ECUACIÓN"];
+  if (tipo === "multiplica") return [`Resuelve x: ${a}x = ${a * x}`, x, "ECUACIÓN"];
+  if (tipo === "mixta") return [`Resuelve x: ${a}x + ${b} = ${a * x + b}`, x, "ECUACIÓN"];
+  return [`Resuelve x: 2x - ${b} = ${2 * x - b}`, x, "ECUACIÓN"];
+}
+
+function operacionDinero(nivel) {
+  const r = rangoPorNivel(nivel);
+  const precio = rand(2, r.mult) * 100;
+  const cantidad = rand(2, 8);
+  const descuento = rand(1, 5) * 100;
+  const tipo = pick(["compra", "cambio", "bono"]);
+  if (tipo === "compra") return [`Compra: ${cantidad} artículos de ${precio}. Total`, cantidad * precio, "DINERO"];
+  if (tipo === "cambio") {
+    const total = cantidad * precio;
+    const paga = total + descuento;
+    return [`Cambio: paga ${paga} por compra de ${total}. Cambio`, paga - total, "DINERO"];
+  }
+  return [`Bono: ${cantidad} cupones de ${precio} menos ${descuento}`, cantidad * precio - descuento, "DINERO"];
 }
 
 function startGame(modo) {
@@ -465,6 +597,13 @@ function useGuide() {
   state.guias -= 1;
   state.bonosUsados += 1;
   const tips = [];
+  if (state.expr.includes("Secuencia")) tips.push("busca cuánto cambia de un número al siguiente");
+  if (state.expr.includes("Resuelve x")) tips.push("despeja x haciendo la operación contraria");
+  if (state.expr.includes("Área")) tips.push("usa base × altura; en triángulo divide entre 2");
+  if (state.expr.includes("Perímetro")) tips.push("suma todos los lados");
+  if (state.expr.includes("Problema")) tips.push("identifica primero qué se repite y qué se suma o resta");
+  if (state.expr.includes("Compra") || state.expr.includes("Cambio") || state.expr.includes("Bono")) tips.push("multiplica precio por cantidad y luego ajusta");
+  if (state.expr.includes("□")) tips.push("encuentra el número que completa la igualdad");
   if (state.expr.includes("(")) tips.push("primero resuelve los paréntesis");
   if (state.expr.includes("²")) tips.push("después calcula los cuadrados");
   if (state.expr.includes("×") || state.expr.includes("÷")) tips.push("luego multiplicación y división");
