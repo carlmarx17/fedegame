@@ -1,0 +1,451 @@
+:root {
+  color-scheme: dark;
+  --bg: #080b10;
+  --panel: #111827;
+  --panel-2: #020617;
+  --text: #eeeeee;
+  --muted: #9ca3af;
+  --red: #e94560;
+  --green: #4ecca3;
+  --orange: #f5a623;
+  --blue: #2563eb;
+  --cyan: #22d3ee;
+  --violet: #8b5cf6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #111827 0, var(--bg) 46%);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.app {
+  width: min(1120px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 18px;
+}
+
+.screen {
+  position: relative;
+  min-height: calc(100vh - 36px);
+  padding: 28px;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: rgba(2, 6, 23, 0.72);
+}
+
+.hidden {
+  display: none;
+}
+
+.top-actions,
+.bottom-actions,
+.game-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.screen-start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.screen-start.hidden {
+  display: none;
+}
+
+.brand-bomb {
+  margin-top: 18px;
+  font-size: clamp(64px, 10vw, 96px);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 12px;
+  color: var(--cyan);
+  font-size: clamp(44px, 8vw, 72px);
+  line-height: 0.95;
+}
+
+.intro {
+  max-width: 720px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.brief {
+  display: grid;
+  gap: 8px;
+  width: min(680px, 100%);
+  margin: 18px 0 22px;
+  padding: 18px;
+  border: 1px solid var(--blue);
+  background: var(--panel);
+}
+
+.brief span,
+.brief small {
+  color: var(--muted);
+}
+
+.brief small {
+  color: var(--cyan);
+}
+
+.name-field {
+  display: grid;
+  gap: 8px;
+  width: min(320px, 100%);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.name-field input,
+#answer-input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: var(--panel);
+  color: var(--orange);
+  text-align: center;
+}
+
+.name-field input {
+  padding: 12px 14px;
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  gap: 12px;
+  width: min(900px, 100%);
+  margin-top: 28px;
+}
+
+.mode-card {
+  display: grid;
+  gap: 8px;
+  min-height: 92px;
+  padding: 16px 12px;
+  background: var(--blue);
+}
+
+.mode-card strong {
+  font-weight: 900;
+}
+
+.mode-card span {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 18px;
+  border: 1px solid var(--blue);
+  background: var(--panel);
+}
+
+.hud strong,
+.hud span {
+  display: block;
+}
+
+.hud span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.hud-stat {
+  font-weight: 700;
+}
+
+.difficulty {
+  color: var(--orange);
+  font-weight: 900;
+}
+
+.timer-track {
+  height: 26px;
+  margin: 20px 48px 12px;
+  border: 2px solid var(--muted);
+  background: var(--panel-2);
+  overflow: hidden;
+}
+
+.timer-bar {
+  width: 100%;
+  height: 100%;
+  background: var(--green);
+  transition: width 160ms linear, background-color 160ms linear;
+}
+
+.mission {
+  min-height: 20px;
+  margin-bottom: 18px;
+  color: var(--muted);
+  text-align: center;
+  font-style: italic;
+}
+
+.play-layout {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr) 230px;
+  gap: 18px;
+  align-items: start;
+}
+
+.bonus-panel,
+.keypad-panel,
+.challenge,
+.final-card {
+  background: rgba(17, 24, 39, 0.88);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+}
+
+.bonus-panel,
+.keypad-panel {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.bonus-panel h2 {
+  margin-bottom: 4px;
+  color: var(--orange);
+  font-size: 17px;
+}
+
+.bonus-panel button,
+.hint-button,
+#submit-answer,
+#next-round,
+#restart-game {
+  padding: 12px 14px;
+  background: var(--red);
+  font-weight: 900;
+}
+
+.bonus-panel button {
+  background: var(--panel-2);
+  color: var(--orange);
+}
+
+#bonus-state {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.challenge {
+  min-height: 500px;
+  padding: 18px;
+  text-align: center;
+}
+
+.bomb {
+  font-size: clamp(64px, 10vw, 96px);
+  line-height: 1;
+  animation: shake 0.34s infinite alternate ease-in-out;
+}
+
+.label {
+  margin: 20px 0 8px;
+  color: var(--muted);
+}
+
+.expression {
+  min-height: 78px;
+  color: var(--orange);
+  font-family: "Courier New", monospace;
+  font-size: clamp(32px, 7vw, 56px);
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.time-left {
+  margin-top: 12px;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.hint,
+.result {
+  min-height: 24px;
+  margin: 12px 0;
+  color: var(--cyan);
+}
+
+.answer-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 220px) auto;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+#answer-input {
+  height: 54px;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.keypad button {
+  min-height: 44px;
+  background: var(--panel-2);
+  font-weight: 900;
+}
+
+.game-actions {
+  margin-top: 16px;
+}
+
+.ghost-button,
+.danger-button {
+  padding: 10px 18px;
+  background: var(--panel);
+  color: var(--cyan);
+  font-weight: 900;
+}
+
+.danger-button {
+  background: var(--red);
+  color: white;
+}
+
+#between-screen,
+#final-screen {
+  text-align: center;
+}
+
+#between-screen h2,
+#final-screen h2 {
+  margin-top: 120px;
+  color: var(--orange);
+  font-size: clamp(34px, 6vw, 54px);
+}
+
+#between-screen button {
+  margin-top: 28px;
+}
+
+.aura {
+  color: var(--green);
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.aura.laura {
+  color: var(--red);
+}
+
+.final-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin: 28px auto 20px;
+  max-width: 900px;
+  text-align: left;
+}
+
+.final-card {
+  min-height: 260px;
+  padding: 18px;
+}
+
+.final-card h3 {
+  color: var(--cyan);
+  text-align: center;
+}
+
+pre {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--muted);
+  font-family: "Courier New", monospace;
+}
+
+.final-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@keyframes shake {
+  from {
+    transform: translateX(-3px) rotate(-1deg);
+  }
+  to {
+    transform: translateX(3px) rotate(1deg);
+  }
+}
+
+@media (max-width: 880px) {
+  .app {
+    padding: 0;
+  }
+
+  .screen {
+    min-height: 100vh;
+    padding: 18px;
+    border: 0;
+  }
+
+  .mode-grid,
+  .play-layout,
+  .final-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hud {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .timer-track {
+    margin-inline: 0;
+  }
+
+  .answer-row {
+    grid-template-columns: 1fr;
+  }
+}

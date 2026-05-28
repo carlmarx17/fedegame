@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FedeGame</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="app">
+      <section id="start-screen" class="screen screen-start">
+        <div class="top-actions">
+          <button id="fullscreen-start" class="ghost-button" type="button">MAX</button>
+        </div>
+        <div class="brand-bomb">💣</div>
+        <h1>FedeGame</h1>
+        <p class="intro">Desactiva bombas resolviendo códigos matemáticos con historia, bonos y dificultad progresiva.</p>
+
+        <div class="brief">
+          <strong>Alerta en la ciudad: una red de bombas matemáticas fue activada.</strong>
+          <span>Escribe tu nombre, elige un modo y empieza la misión.</span>
+          <small id="current-record">Récord: 0 pts</small>
+        </div>
+
+        <label class="name-field">
+          <span>Nombre para guardar score</span>
+          <input id="player-name" type="text" maxlength="18" value="Fede" autocomplete="off">
+        </label>
+
+        <div class="mode-grid">
+          <button class="mode-card" type="button" data-mode="normal">
+            <strong>Normal</strong>
+            <span>8 rondas · 3 vidas</span>
+          </button>
+          <button class="mode-card" type="button" data-mode="rapido">
+            <strong>Rápido</strong>
+            <span>6 rondas · presión alta</span>
+          </button>
+          <button class="mode-card" type="button" data-mode="experto">
+            <strong>Experto</strong>
+            <span>10 rondas · duro</span>
+          </button>
+          <button class="mode-card" type="button" data-mode="historia">
+            <strong>Historia</strong>
+            <span>12 rondas · campaña</span>
+          </button>
+          <button class="mode-card" type="button" data-mode="leyenda">
+            <strong>Leyenda</strong>
+            <span>14 rondas · máximo reto</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="game-screen" class="screen hidden">
+        <header class="hud">
+          <div>
+            <strong id="hud-title">FedeGame</strong>
+            <span id="hud-round">Ronda 1/8</span>
+          </div>
+          <div class="hud-stat">🏆 <span id="hud-points">0</span> pts</div>
+          <div class="hud-stat">❤ <span id="hud-lives">3</span></div>
+          <div id="hud-difficulty" class="difficulty">FÁCIL</div>
+        </header>
+
+        <div class="timer-track">
+          <div id="timer-bar" class="timer-bar"></div>
+        </div>
+
+        <p id="mission-text" class="mission"></p>
+
+        <div class="play-layout">
+          <aside class="bonus-panel">
+            <h2>Bonos</h2>
+            <button id="bonus-freeze" type="button">🧊 FREEZE</button>
+            <button id="bonus-shield" type="button">🛡 ESCUDO</button>
+            <button id="bonus-time" type="button">⏱ +10s</button>
+            <p id="bonus-state"></p>
+          </aside>
+
+          <section class="challenge">
+            <div id="bomb" class="bomb">💣</div>
+            <p class="label">Código de desactivación</p>
+            <div id="expression" class="expression">2 + 2</div>
+            <div id="time-left" class="time-left">30 segundos</div>
+            <p id="hint-text" class="hint"></p>
+
+            <div class="answer-row">
+              <input id="answer-input" type="text" inputmode="numeric" autocomplete="off" aria-label="Respuesta">
+              <button id="submit-answer" type="button">DESACTIVAR</button>
+            </div>
+            <p id="result-text" class="result"></p>
+          </section>
+
+          <aside class="keypad-panel">
+            <button id="hint-button" type="button" class="hint-button">? PISTA</button>
+            <div id="keypad" class="keypad"></div>
+          </aside>
+        </div>
+
+        <footer class="game-actions">
+          <button id="fullscreen-game" class="ghost-button" type="button">MAX</button>
+          <button id="quit-game" class="danger-button" type="button">SALIR</button>
+        </footer>
+      </section>
+
+      <section id="between-screen" class="screen hidden">
+        <h2 id="between-title">Ronda completada</h2>
+        <p id="between-score"></p>
+        <p id="between-message"></p>
+        <button id="next-round" type="button">SIGUIENTE RONDA</button>
+        <div class="bottom-actions">
+          <button id="fullscreen-between" class="ghost-button" type="button">MAX</button>
+          <button id="quit-between" class="danger-button" type="button">SALIR</button>
+        </div>
+      </section>
+
+      <section id="final-screen" class="screen hidden">
+        <h2 id="final-title">FedeGame terminado</h2>
+        <div id="aura-laura" class="aura">aura</div>
+        <p id="final-points"></p>
+        <p id="final-message"></p>
+
+        <div class="final-grid">
+          <section class="final-card">
+            <h3>Estadísticas</h3>
+            <p id="final-stats"></p>
+            <pre id="history-list"></pre>
+          </section>
+          <section class="final-card">
+            <h3>Top scores</h3>
+            <pre id="scores-list"></pre>
+          </section>
+        </div>
+
+        <div class="final-actions">
+          <button id="restart-game" type="button">JUGAR DE NUEVO</button>
+          <button id="fullscreen-final" class="ghost-button" type="button">MAX</button>
+          <button id="quit-final" class="danger-button" type="button">SALIR</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>

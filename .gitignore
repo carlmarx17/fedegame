@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.git/
+.git-real/
+.agents/
+.codex/
+fedegame_records.json
