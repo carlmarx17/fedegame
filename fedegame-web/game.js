@@ -109,9 +109,13 @@ function generarOperacion() {
   if (familia === "faltante") return operacionFaltante(nivel);
   if (familia === "secuencia") return operacionSecuencia(nivel);
   if (familia === "problema") return operacionProblema(nivel);
-  if (familia === "geometria") return operacionGeometria(nivel);
   if (familia === "ecuacion") return operacionEcuacion(nivel);
   if (familia === "dinero") return operacionDinero(nivel);
+  if (familia === "codigo") return operacionCodigo(nivel);
+  if (familia === "robot") return operacionRobot(nivel);
+  if (familia === "dados") return operacionDados(nivel);
+  if (familia === "comparacion") return operacionComparacion(nivel);
+  if (familia === "mapa") return operacionMapa(nivel);
 
   if (nivel === "facil") return operacionFacil();
   if (nivel === "media") return operacionMedia();
@@ -122,10 +126,10 @@ function generarOperacion() {
 
 function elegirFamilia() {
   const progreso = state.ronda / state.rondas;
-  const basicas = ["normal", "normal", "faltante", "secuencia", "problema"];
-  const medias = ["normal", "faltante", "secuencia", "problema", "geometria", "dinero"];
-  const avanzadas = ["normal", "faltante", "secuencia", "problema", "geometria", "ecuacion", "dinero"];
-  if (state.modo === "entrenamiento") return pick(["normal", "faltante", "secuencia", "problema"]);
+  const basicas = ["normal", "normal", "faltante", "secuencia", "problema", "codigo", "dados"];
+  const medias = ["normal", "faltante", "secuencia", "problema", "dinero", "codigo", "robot", "comparacion", "mapa"];
+  const avanzadas = ["normal", "faltante", "secuencia", "problema", "ecuacion", "dinero", "codigo", "robot", "dados", "comparacion", "mapa"];
+  if (state.modo === "entrenamiento") return pick(["normal", "faltante", "secuencia", "problema", "codigo", "dados"]);
   if (progreso < 0.3) return pick(basicas);
   if (progreso < 0.7) return pick(medias);
   return pick(avanzadas);
@@ -303,19 +307,6 @@ function operacionProblema(nivel) {
   return [`Problema: ${grupos} equipos de ${porGrupo} y llegan ${extra} más. Total`, grupos * porGrupo + extra, "PROBLEMA"];
 }
 
-function operacionGeometria(nivel) {
-  const r = rangoPorNivel(nivel);
-  const a = rand(2, r.mult);
-  const b = rand(2, r.mult);
-  const tipo = pick(["area", "perimetro", "cuadrado", "triangulo"]);
-  if (tipo === "area") return [`Área rectángulo: base ${a}, altura ${b}`, a * b, "GEOMETRÍA"];
-  if (tipo === "perimetro") return [`Perímetro rectángulo: lados ${a} y ${b}`, 2 * (a + b), "GEOMETRÍA"];
-  if (tipo === "cuadrado") return [`Área cuadrado: lado ${a}`, a * a, "GEOMETRÍA"];
-  const base = rand(2, r.mult) * 2;
-  const altura = rand(2, r.mult);
-  return [`Área triángulo: base ${base}, altura ${altura}`, (base * altura) / 2, "GEOMETRÍA"];
-}
-
 function operacionEcuacion(nivel) {
   const r = rangoPorNivel(nivel);
   const x = rand(2, r.max);
@@ -341,6 +332,68 @@ function operacionDinero(nivel) {
     return [`Cambio: paga ${paga} por compra de ${total}. Cambio`, paga - total, "DINERO"];
   }
   return [`Bono: ${cantidad} cupones de ${precio} menos ${descuento}`, cantidad * precio - descuento, "DINERO"];
+}
+
+function operacionCodigo(nivel) {
+  const r = rangoPorNivel(nivel);
+  const a = rand(2, r.mult);
+  const b = rand(2, r.mult);
+  const c = rand(1, 9);
+  const tipo = pick(["clave", "digitos", "candado", "alarma"]);
+  if (tipo === "clave") return [`Código secreto: (${a} × ${b}) + ${c}`, a * b + c, "CÓDIGO"];
+  if (tipo === "digitos") {
+    const decenas = rand(2, 9);
+    const unidades = rand(1, 9);
+    return [`Código invertido: si ves ${decenas}${unidades}, escribe el inverso`, unidades * 10 + decenas, "CÓDIGO"];
+  }
+  if (tipo === "candado") return [`Candado: clave = ${a}² - ${b}`, a * a - b, "CÓDIGO"];
+  return [`Alarma: suma los dígitos de ${a * 100 + b * 10 + c}`, a + b + c, "CÓDIGO"];
+}
+
+function operacionRobot(nivel) {
+  const r = rangoPorNivel(nivel);
+  const energia = rand(20, r.max + 25);
+  const sube = rand(5, r.mult + 10);
+  const baja = rand(3, r.mult);
+  const doble = rand(2, 5);
+  const tipo = pick(["energia", "bateria", "combo"]);
+  if (tipo === "energia") return [`Robot: energía ${energia}, gana ${sube}, pierde ${baja}`, energia + sube - baja, "ROBOT"];
+  if (tipo === "bateria") return [`Robot: ${doble} baterías de ${sube} y usa ${baja}`, doble * sube - baja, "ROBOT"];
+  return [`Robot: empieza en ${energia}, duplica ${doble} y resta ${baja}`, energia + doble * 2 - baja, "ROBOT"];
+}
+
+function operacionDados(nivel) {
+  const r = rangoPorNivel(nivel);
+  const dados = nivel === "facil" ? 2 : rand(3, 5);
+  const caras = nivel === "facil" ? 6 : pick([8, 10, 12]);
+  const valores = Array.from({ length: dados }, () => rand(1, caras));
+  const bonus = rand(1, Math.max(3, Math.floor(r.mult / 2)));
+  const tipo = pick(["suma", "doble", "mayor"]);
+  if (tipo === "suma") return [`Dados: ${valores.join(" + ")} + bonus ${bonus}`, valores.reduce((a, b) => a + b, 0) + bonus, "DADOS"];
+  if (tipo === "doble") return [`Dados: doble del mayor entre ${valores.join(", ")}`, Math.max(...valores) * 2, "DADOS"];
+  return [`Dados: mayor tirada entre ${valores.join(", ")}`, Math.max(...valores), "DADOS"];
+}
+
+function operacionComparacion(nivel) {
+  const r = rangoPorNivel(nivel);
+  const nums = Array.from({ length: 4 }, () => rand(-Math.floor(r.max / 3), r.max));
+  const tipo = pick(["mayor", "menor", "distancia"]);
+  if (tipo === "mayor") return [`Elige el mayor: ${nums.join(", ")}`, Math.max(...nums), "COMPARA"];
+  if (tipo === "menor") return [`Elige el menor: ${nums.join(", ")}`, Math.min(...nums), "COMPARA"];
+  const a = rand(-r.mult, r.mult);
+  const b = rand(-r.mult, r.mult);
+  return [`Distancia en la recta: de ${a} a ${b}`, Math.abs(a - b), "COMPARA"];
+}
+
+function operacionMapa(nivel) {
+  const r = rangoPorNivel(nivel);
+  const inicio = rand(-10, 10);
+  const pasos1 = rand(2, r.mult);
+  const pasos2 = rand(1, r.mult);
+  const tipo = pick(["avanza", "retrocede", "tesoro"]);
+  if (tipo === "avanza") return [`Mapa: empiezas en ${inicio}, avanzas ${pasos1}, retrocedes ${pasos2}`, inicio + pasos1 - pasos2, "MAPA"];
+  if (tipo === "retrocede") return [`Mapa: empiezas en ${inicio}, retrocedes ${pasos1}, avanzas ${pasos2}`, inicio - pasos1 + pasos2, "MAPA"];
+  return [`Tesoro: posición (${inicio} + ${pasos1}) × 2 - ${pasos2}`, (inicio + pasos1) * 2 - pasos2, "MAPA"];
 }
 
 function startGame(modo) {
@@ -599,10 +652,13 @@ function useGuide() {
   const tips = [];
   if (state.expr.includes("Secuencia")) tips.push("busca cuánto cambia de un número al siguiente");
   if (state.expr.includes("Resuelve x")) tips.push("despeja x haciendo la operación contraria");
-  if (state.expr.includes("Área")) tips.push("usa base × altura; en triángulo divide entre 2");
-  if (state.expr.includes("Perímetro")) tips.push("suma todos los lados");
   if (state.expr.includes("Problema")) tips.push("identifica primero qué se repite y qué se suma o resta");
   if (state.expr.includes("Compra") || state.expr.includes("Cambio") || state.expr.includes("Bono")) tips.push("multiplica precio por cantidad y luego ajusta");
+  if (state.expr.includes("Código") || state.expr.includes("Candado") || state.expr.includes("Alarma")) tips.push("lee la regla de la clave y aplícala paso por paso");
+  if (state.expr.includes("Robot")) tips.push("lleva la energía como un marcador: suma ganancias y resta gastos");
+  if (state.expr.includes("Dados")) tips.push("si pide mayor, no sumes; si pide suma, agrega todos");
+  if (state.expr.includes("Elige")) tips.push("compara todos antes de responder");
+  if (state.expr.includes("Mapa") || state.expr.includes("Tesoro")) tips.push("usa una recta numérica: avanzar suma, retroceder resta");
   if (state.expr.includes("□")) tips.push("encuentra el número que completa la igualdad");
   if (state.expr.includes("(")) tips.push("primero resuelve los paréntesis");
   if (state.expr.includes("²")) tips.push("después calcula los cuadrados");
