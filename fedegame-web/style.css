@@ -145,7 +145,7 @@ h1 {
 
 .mode-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
   gap: 12px;
   width: min(900px, 100%);
   margin-top: 28px;
@@ -154,7 +154,7 @@ h1 {
 .mode-card {
   display: grid;
   gap: 8px;
-  min-height: 92px;
+  min-height: 96px;
   padding: 16px 12px;
   background: var(--blue);
 }
@@ -238,7 +238,7 @@ h1 {
 .bonus-panel,
 .keypad-panel {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   padding: 16px;
 }
 
@@ -261,6 +261,7 @@ h1 {
 .bonus-panel button {
   background: var(--panel-2);
   color: var(--orange);
+  padding: 10px 12px;
 }
 
 #bonus-state {

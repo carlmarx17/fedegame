@@ -1,9 +1,10 @@
 const MODOS = {
-  normal: { nombre: "NORMAL", rondas: 8, vidas: 3, tiempo: 30, penalizacion: 5 },
-  rapido: { nombre: "RÁPIDO", rondas: 6, vidas: 2, tiempo: 20, penalizacion: 4 },
-  experto: { nombre: "EXPERTO", rondas: 10, vidas: 2, tiempo: 26, penalizacion: 6 },
-  historia: { nombre: "HISTORIA", rondas: 12, vidas: 4, tiempo: 28, penalizacion: 5 },
-  leyenda: { nombre: "LEYENDA", rondas: 14, vidas: 2, tiempo: 24, penalizacion: 7 },
+  entrenamiento: { nombre: "ENTRENO", rondas: 8, vidas: 5, tiempo: 50, minTiempo: 34, penalizacion: 3 },
+  normal: { nombre: "NORMAL", rondas: 12, vidas: 4, tiempo: 42, minTiempo: 26, penalizacion: 4 },
+  rapido: { nombre: "RÁPIDO", rondas: 10, vidas: 3, tiempo: 32, minTiempo: 20, penalizacion: 4 },
+  experto: { nombre: "EXPERTO", rondas: 16, vidas: 3, tiempo: 38, minTiempo: 22, penalizacion: 5 },
+  historia: { nombre: "HISTORIA", rondas: 20, vidas: 5, tiempo: 42, minTiempo: 24, penalizacion: 4 },
+  leyenda: { nombre: "LEYENDA", rondas: 24, vidas: 3, tiempo: 40, minTiempo: 22, penalizacion: 6 },
 };
 
 const HISTORIA = [
@@ -19,6 +20,7 @@ const HISTORIA = [
 const PISTA_COSTO = 25;
 const FREEZE_SEGUNDOS = 5;
 const BONO_TIEMPO_SEGUNDOS = 10;
+const SKIP_PUNTOS = 35;
 const SCORE_KEY = "fedegame_scores";
 
 const $ = (id) => document.getElementById(id);
@@ -47,6 +49,10 @@ const state = {
   freezeCupones: 0,
   escudos: 0,
   bonosTiempo: 0,
+  guias: 0,
+  digitos: 0,
+  vidasExtra: 0,
+  pases: 0,
   freezeTurnos: 0,
   escudoActivo: false,
   bonosUsados: 0,
@@ -97,32 +103,31 @@ function updateRecordLabel() {
 }
 
 function generarOperacion() {
-  let nivel;
-  if (state.modo === "leyenda" && state.ronda >= 9) {
-    nivel = pick(["leyenda", "maestra", "maestra"]);
-  } else if (state.modo === "leyenda" && state.ronda >= 4) {
-    nivel = pick(["maestra", "dificil", "leyenda"]);
-  } else if (state.modo === "historia" && state.ronda >= 10) {
-    nivel = pick(["leyenda", "maestra", "dificil"]);
-  } else if (state.modo === "historia" && state.ronda >= 6) {
-    nivel = pick(["maestra", "dificil", "media"]);
-  } else if (state.modo === "experto" && state.ronda >= 7) {
-    nivel = pick(["maestra", "dificil", "dificil"]);
-  } else if (state.modo === "experto" && state.ronda >= 3) {
-    nivel = pick(["dificil", "media", "maestra"]);
-  } else if (state.ronda <= 2) {
-    nivel = "facil";
-  } else if (state.ronda <= 5) {
-    nivel = pick(["media", "media", "facil"]);
-  } else {
-    nivel = pick(["dificil", "dificil", "media", "maestra"]);
-  }
+  const nivel = elegirNivel();
 
   if (nivel === "facil") return operacionFacil();
   if (nivel === "media") return operacionMedia();
   if (nivel === "dificil") return operacionDificil();
   if (nivel === "maestra") return operacionMaestra();
   return operacionLeyenda();
+}
+
+function elegirNivel() {
+  const progreso = state.ronda / state.rondas;
+  if (state.modo === "entrenamiento") {
+    if (progreso < 0.5) return "facil";
+    if (progreso < 0.85) return pick(["facil", "media"]);
+    return pick(["media", "dificil"]);
+  }
+  if (progreso < 0.25) return pick(["facil", "facil", "media"]);
+  if (progreso < 0.5) return pick(["facil", "media", "media"]);
+  if (progreso < 0.72) return pick(["media", "media", "dificil"]);
+  if (progreso < 0.88) return pick(["media", "dificil", "dificil", "maestra"]);
+  if (state.modo === "leyenda" || state.modo === "historia") {
+    return pick(["dificil", "maestra", "maestra", "leyenda"]);
+  }
+  if (state.modo === "experto") return pick(["dificil", "maestra", "maestra"]);
+  return pick(["dificil", "dificil", "maestra"]);
 }
 
 function operacionFacil() {
@@ -220,14 +225,30 @@ function startGame(modo) {
     errores: 0,
     explosiones: 0,
     historial: [],
-    freezeCupones: modo === "historia" || modo === "leyenda" ? 2 : 1,
-    escudos: 1,
-    bonosTiempo: modo === "normal" || modo === "historia" ? 2 : 1,
+    freezeCupones: ayudaInicial(modo, "freeze"),
+    escudos: ayudaInicial(modo, "escudo"),
+    bonosTiempo: ayudaInicial(modo, "tiempo"),
+    guias: ayudaInicial(modo, "guia"),
+    digitos: ayudaInicial(modo, "digito"),
+    vidasExtra: ayudaInicial(modo, "vida"),
+    pases: ayudaInicial(modo, "pasar"),
     freezeTurnos: 0,
     escudoActivo: false,
     bonosUsados: 0,
   });
   nextRound();
+}
+
+function ayudaInicial(modo, tipo) {
+  const ayudas = {
+    entrenamiento: { freeze: 3, escudo: 3, tiempo: 3, guia: 4, digito: 3, vida: 2, pasar: 2 },
+    normal: { freeze: 2, escudo: 2, tiempo: 3, guia: 3, digito: 2, vida: 1, pasar: 1 },
+    rapido: { freeze: 2, escudo: 1, tiempo: 2, guia: 2, digito: 1, vida: 1, pasar: 1 },
+    experto: { freeze: 2, escudo: 2, tiempo: 2, guia: 2, digito: 2, vida: 1, pasar: 1 },
+    historia: { freeze: 3, escudo: 3, tiempo: 4, guia: 4, digito: 3, vida: 2, pasar: 2 },
+    leyenda: { freeze: 3, escudo: 2, tiempo: 3, guia: 3, digito: 2, vida: 1, pasar: 2 },
+  };
+  return ayudas[modo]?.[tipo] ?? 1;
 }
 
 function nextRound() {
@@ -241,7 +262,7 @@ function nextRound() {
   state.expr = expr;
   state.respuesta = res;
   state.dificultad = dif;
-  state.tiempoRonda = Math.max(12, MODOS[state.modo].tiempo - (state.ronda - 1) * 2);
+  state.tiempoRonda = tiempoParaRonda();
   state.tiempo = state.tiempoRonda;
   state.pistaUsada = false;
   state.freezeTurnos = 0;
@@ -250,6 +271,12 @@ function nextRound() {
   renderRound();
   state.timer = setInterval(tick, 1000);
   $("answer-input").focus();
+}
+
+function tiempoParaRonda() {
+  const config = MODOS[state.modo];
+  const descuento = Math.floor((state.ronda - 1) * 0.85);
+  return Math.max(config.minTiempo, config.tiempo - descuento);
 }
 
 function renderRound() {
@@ -296,7 +323,15 @@ function updateTimer() {
 function updateBonusState() {
   const freeze = state.freezeTurnos > 0 ? `x${state.freezeCupones} (${state.freezeTurnos}s)` : `x${state.freezeCupones}`;
   const escudo = state.escudoActivo ? "ACTIVO" : `x${state.escudos}`;
-  $("bonus-state").textContent = `FREEZE ${freeze} · ESCUDO ${escudo} · +10s x${state.bonosTiempo}`;
+  $("bonus-state").textContent = [
+    `FREEZE ${freeze}`,
+    `ESCUDO ${escudo}`,
+    `+10s x${state.bonosTiempo}`,
+    `GUÍA x${state.guias}`,
+    `DÍGITO x${state.digitos}`,
+    `VIDA x${state.vidasExtra}`,
+    `PASAR x${state.pases}`,
+  ].join("\n");
 }
 
 function submitAnswer() {
@@ -396,7 +431,7 @@ function finalMessage() {
   if (percent >= 80) return "Excelente trabajo, casi impecable.";
   if (percent >= 60) return "Buen trabajo. Sigue practicando.";
   if (percent >= 40) return "Bien. Puedes mejorar.";
-  return "Necesitas más práctica.";
+  return "Sigue practicando: usa guía, dígito y bonos para aprender el orden correcto.";
 }
 
 function scoresText() {
@@ -423,6 +458,56 @@ function showHint() {
   $("hud-points").textContent = state.puntos;
   $("hint-text").textContent = `Pista: resultado ${sign}, ${parity}, cerca de ${near}.`;
   result(`Pista usada: -${PISTA_COSTO} pts`, "var(--cyan)");
+}
+
+function useGuide() {
+  if (!state.respondiendo || state.guias <= 0) return;
+  state.guias -= 1;
+  state.bonosUsados += 1;
+  const tips = [];
+  if (state.expr.includes("(")) tips.push("primero resuelve los paréntesis");
+  if (state.expr.includes("²")) tips.push("después calcula los cuadrados");
+  if (state.expr.includes("×") || state.expr.includes("÷")) tips.push("luego multiplicación y división");
+  tips.push("al final suma y resta de izquierda a derecha");
+  $("hint-text").textContent = `Guía: ${tips.join(", ")}.`;
+  result("📘 Guía matemática activada.", "var(--cyan)");
+  updateBonusState();
+}
+
+function useDigit() {
+  if (!state.respondiendo || state.digitos <= 0) return;
+  state.digitos -= 1;
+  state.bonosUsados += 1;
+  const answer = String(Math.abs(state.respuesta));
+  const last = answer.at(-1);
+  const sign = state.respuesta < 0 ? "negativo" : state.respuesta > 0 ? "positivo" : "cero";
+  $("hint-text").textContent = `Dígito: la respuesta es ${sign} y termina en ${last}.`;
+  result("🔢 Cupón de dígito usado.", "var(--cyan)");
+  updateBonusState();
+}
+
+function useExtraLife() {
+  if (!state.respondiendo || state.vidasExtra <= 0) return;
+  state.vidasExtra -= 1;
+  state.vidas += 1;
+  state.bonosUsados += 1;
+  $("hud-lives").textContent = state.vidas;
+  result("❤ Vida extra agregada.", "var(--green)");
+  updateBonusState();
+}
+
+function useSkip() {
+  if (!state.respondiendo || state.pases <= 0) return;
+  state.pases -= 1;
+  state.bonosUsados += 1;
+  state.respondiendo = false;
+  state.puntos += SKIP_PUNTOS;
+  state.historial.push({ ronda: state.ronda, estado: "PASE", expr: state.expr, respuesta: state.respuesta, puntos: SKIP_PUNTOS });
+  $("hud-points").textContent = state.puntos;
+  $("bomb").textContent = "⏭";
+  result(`⏭ Ronda pasada. +${SKIP_PUNTOS} pts de rescate.`, "var(--orange)");
+  updateBonusState();
+  setTimeout(transitionRound, 1200);
 }
 
 function useFreeze() {
@@ -496,6 +581,10 @@ function bindEvents() {
   $("bonus-freeze").addEventListener("click", useFreeze);
   $("bonus-shield").addEventListener("click", useShield);
   $("bonus-time").addEventListener("click", useTimeBonus);
+  $("bonus-guide").addEventListener("click", useGuide);
+  $("bonus-digit").addEventListener("click", useDigit);
+  $("bonus-life").addEventListener("click", useExtraLife);
+  $("bonus-skip").addEventListener("click", useSkip);
   $("next-round").addEventListener("click", nextRound);
   $("restart-game").addEventListener("click", () => showScreen("start-screen"));
 
